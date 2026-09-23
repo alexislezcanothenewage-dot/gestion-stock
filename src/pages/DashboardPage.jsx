@@ -93,7 +93,8 @@ export default function DashboardPage() {
           {(() => {
             const salesTotal = Number(data.salesMonth?.total || 0);
             const expensesTotal = Number(data.expensesMonth?.total || 0);
-            const netProfit = salesTotal - expensesTotal;
+            const purchasesTotal = Number(data.purchasesMonth?.total || 0);
+            const netProfit = salesTotal - expensesTotal - purchasesTotal;
             const isProfitPositive = netProfit >= 0;
 
             return (
@@ -177,7 +178,7 @@ export default function DashboardPage() {
                       isProfitPositive ? 'text-teal-700' : 'text-rose-700'
                     }`}
                   >
-                    <span>Ventas − Egresos op.</span>
+                    <span>Ventas − Egresos − Compras</span>
                   </div>
                 </div>
 
