@@ -143,8 +143,11 @@ export default function ProductDetailPage() {
           form={toProductForm(product)}
           categories={categories}
           onClose={() => setEditing(false)}
-          onSave={async (body) => {
+          onSave={async (body, photoFile) => {
             await api.saveProduct(product.id, body);
+            if (photoFile) {
+              await api.uploadAttachment('product', product.id, photoFile);
+            }
             setEditing(false);
             await load();
           }}

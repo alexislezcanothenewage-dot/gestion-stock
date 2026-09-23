@@ -1,12 +1,77 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Camera } from 'lucide-react';
 import { api, attachmentFileUrl } from '../api';
 import ConfirmDangerModal from '../components/ConfirmDangerModal';
 import ProductForm, { emptyProduct, toProductForm } from '../components/ProductForm';
 import StockAdjustModal from '../components/StockAdjustModal';
 import { money, qty } from '../format';
 import { useStore } from '../store';
+
+function ProductPhotoCell({ row, onUploaded }) {
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+
+  async function handleFile(ev) {
+    const file = ev.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      await api.uploadAttachment('product', row.id, file);
+      await onUploaded();
+    } catch (err) {
+      alert(err.message || 'Error al subir la foto');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  }
+
+  return (
+    <div className="relative group shrink-0">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFile}
+      />
+      {row.photo_id ? (
+        <div
+          onClick={() => fileInputRef.current?.click()}
+          className="relative h-12 w-12 cursor-pointer overflow-hidden rounded-xl border border-slate-200 transition hover:border-[#1a73e8]"
+          title="Hacé clic para cambiar la foto"
+        >
+          <img
+            src={attachmentFileUrl(row.photo_id)}
+            alt=""
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 hidden place-items-center bg-black/40 text-white group-hover:grid">
+            <Camera className="h-4 w-4" />
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="grid h-12 w-12 place-items-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 text-[11px] font-semibold text-slate-400 transition hover:border-[#1a73e8] hover:bg-blue-50/70 hover:text-[#1a73e8]"
+          title="Hacé clic para subir una foto directamente"
+        >
+          {uploading ? (
+            <span className="text-[10px]">...</span>
+          ) : (
+            <div className="flex flex-col items-center">
+              <Camera className="h-3.5 w-3.5" />
+              <span className="text-[9px] mt-0.5">+ Foto</span>
+            </div>
+          )}
+        </button>
+      )}
+    </div>
+  );
+}
 
 export default function ProductsPage() {
   const { currency } = useStore();
@@ -147,17 +212,7 @@ export default function ProductsPage() {
               <tr key={row.id}>
                 <td>
                   <div className="flex items-center gap-3">
-                    {row.photo_id ? (
-                      <img
-                        src={attachmentFileUrl(row.photo_id)}
-                        alt=""
-                        className="h-11 w-11 shrink-0 rounded-lg border border-[#dadce0] object-cover"
-                      />
-                    ) : (
-                      <div className="grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-dashed border-[#dadce0] text-xs text-[#70757a]">
-                        Foto
-                      </div>
-                    )}
+                    <ProductPhotoCell row={row} onUploaded={load} />
                     <div>
                       <Link className="font-medium text-[#1a73e8]" to={`/productos/${row.id}`}>
                         {row.name}
@@ -265,8 +320,17 @@ export default function ProductsPage() {
           form={editing}
           categories={categories}
           onClose={() => setEditing(null)}
-          onSave={async (body) => {
-            await api.saveProduct(editing.id, body);
+          onSave={async (body, photoFile) => {
+            let prodId = editing.id;
+            if (editing.id) {
+              await api.saveProduct(editing.id, body);
+            } else {
+              const res = await api.saveProduct(null, body);
+              prodId = res.data?.id;
+            }
+            if (photoFile && prodId) {
+              await api.uploadAttachment('product', prodId, photoFile);
+            }
             setEditing(null);
             await load();
           }}

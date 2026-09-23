@@ -87,8 +87,8 @@ export default function DashboardPage() {
 
       {data && (
         <>
-          {/* Fila de Tarjetas KPI con diseño moderno y colorido */}
-          <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          {/* Fila de Tarjetas KPI con diseño amplio para que los números de millones se vean completos */}
+          <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {/* Ventas del mes */}
             <div className="group relative overflow-hidden rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/90 via-white to-emerald-50/40 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
               <div className="flex items-center justify-between">
