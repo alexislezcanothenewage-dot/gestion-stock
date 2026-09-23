@@ -9,8 +9,10 @@ import {
   Flame,
   Layers,
   PackagePlus,
+  Receipt,
   RefreshCw,
   ShoppingCart,
+  TrendingDown,
   TrendingUp,
   Truck,
   Users,
@@ -87,137 +89,212 @@ export default function DashboardPage() {
 
       {data && (
         <>
-          {/* Fila de Tarjetas KPI con diseño amplio para que los números de millones se vean completos */}
-          <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Ventas del mes */}
-            <div className="group relative overflow-hidden rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/90 via-white to-emerald-50/40 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-wider text-emerald-800">
-                  Ventas del mes
-                </span>
-                <div className="grid h-8 w-8 place-items-center rounded-xl bg-emerald-500 text-white shadow-sm shadow-emerald-200">
-                  <TrendingUp className="h-4 w-4" />
-                </div>
-              </div>
-              <div className="mt-3 text-2xl font-black tracking-tight text-emerald-950">
-                {money(data.salesMonth.total, currency)}
-              </div>
-              <div className="mt-1 flex items-center gap-1.5 text-xs font-medium text-emerald-700">
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                {data.salesMonth.count} ventas confirmadas
-              </div>
-            </div>
+          {/* Fila de Tarjetas KPI con diseño amplio y las nuevas métricas financieras */}
+          {(() => {
+            const salesTotal = Number(data.salesMonth?.total || 0);
+            const expensesTotal = Number(data.expensesMonth?.total || 0);
+            const netProfit = salesTotal - expensesTotal;
+            const isProfitPositive = netProfit >= 0;
 
-            {/* Compras del mes */}
-            <div className="group relative overflow-hidden rounded-2xl border border-blue-200/80 bg-gradient-to-br from-blue-50/90 via-white to-blue-50/40 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-wider text-blue-800">
-                  Compras del mes
-                </span>
-                <div className="grid h-8 w-8 place-items-center rounded-xl bg-blue-500 text-white shadow-sm shadow-blue-200">
-                  <PackagePlus className="h-4 w-4" />
+            return (
+              <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {/* 1. Ventas del mes */}
+                <div className="group relative overflow-hidden rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/90 via-white to-emerald-50/40 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-emerald-800">
+                      Ventas del mes
+                    </span>
+                    <div className="grid h-8 w-8 place-items-center rounded-xl bg-emerald-500 text-white shadow-sm shadow-emerald-200">
+                      <TrendingUp className="h-4 w-4" />
+                    </div>
+                  </div>
+                  <div className="mt-3 text-2xl font-black tracking-tight text-emerald-950">
+                    {money(salesTotal, currency)}
+                  </div>
+                  <div className="mt-1 flex items-center gap-1.5 text-xs font-medium text-emerald-700">
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                    {data.salesMonth?.count || 0} ventas confirmadas
+                  </div>
                 </div>
-              </div>
-              <div className="mt-3 text-2xl font-black tracking-tight text-blue-950">
-                {money(data.purchasesMonth.total, currency)}
-              </div>
-              <div className="mt-1 flex items-center gap-1.5 text-xs font-medium text-blue-700">
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-blue-500"></span>
-                {data.purchasesMonth.count} compras a prov.
-              </div>
-            </div>
 
-            {/* Stock valorizado */}
-            <div className="group relative overflow-hidden rounded-2xl border border-indigo-200/80 bg-gradient-to-br from-indigo-50/90 via-white to-indigo-50/40 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-wider text-indigo-800">
-                  Stock a costo
-                </span>
-                <div className="grid h-8 w-8 place-items-center rounded-xl bg-indigo-500 text-white shadow-sm shadow-indigo-200">
-                  <Boxes className="h-4 w-4" />
-                </div>
-              </div>
-              <div className="mt-3 text-2xl font-black tracking-tight text-indigo-950">
-                {money(data.stock.cost_value, currency)}
-              </div>
-              <div className="mt-1 text-xs font-medium text-indigo-700">
-                Venta: {money(data.stock.sale_value, currency)}
-              </div>
-            </div>
-
-            {/* Por cobrar */}
-            <div className="group relative overflow-hidden rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50/90 via-white to-amber-50/40 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-wider text-amber-800">
-                  Por cobrar
-                </span>
-                <div className="grid h-8 w-8 place-items-center rounded-xl bg-amber-500 text-white shadow-sm shadow-amber-200">
-                  <Users className="h-4 w-4" />
-                </div>
-              </div>
-              <div className="mt-3 text-2xl font-black tracking-tight text-amber-950">
-                {money(data.receivable, currency)}
-              </div>
-              <div className="mt-1 text-xs font-medium text-amber-700">Saldo de clientes</div>
-            </div>
-
-            {/* Por pagar */}
-            <div className="group relative overflow-hidden rounded-2xl border border-purple-200/80 bg-gradient-to-br from-purple-50/90 via-white to-purple-50/40 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-wider text-purple-800">
-                  Por pagar
-                </span>
-                <div className="grid h-8 w-8 place-items-center rounded-xl bg-purple-500 text-white shadow-sm shadow-purple-200">
-                  <Truck className="h-4 w-4" />
-                </div>
-              </div>
-              <div className="mt-3 text-2xl font-black tracking-tight text-purple-950">
-                {money(data.payable, currency)}
-              </div>
-              <div className="mt-1 text-xs font-medium text-purple-700">A pagar a proveedores</div>
-            </div>
-
-            {/* Alerta de Stock Crítico */}
-            <Link
-              to="/productos?lowStock=true"
-              className={`group relative overflow-hidden rounded-2xl border p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${
-                lowStockCount > 0
-                  ? 'border-rose-300 bg-gradient-to-br from-rose-50 via-white to-red-50 text-rose-950'
-                  : 'border-emerald-200 bg-gradient-to-br from-emerald-50/70 via-white to-teal-50/30 text-emerald-950'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span
-                  className={`text-xs font-semibold uppercase tracking-wider ${
-                    lowStockCount > 0 ? 'text-rose-800' : 'text-emerald-800'
-                  }`}
+                {/* 2. Egresos del mes */}
+                <Link
+                  to="/egresos"
+                  className="group relative overflow-hidden rounded-2xl border border-orange-200/80 bg-gradient-to-br from-orange-50/90 via-white to-rose-50/40 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
-                  Alertas Stock
-                </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-orange-800">
+                      Egresos del mes
+                    </span>
+                    <div className="grid h-8 w-8 place-items-center rounded-xl bg-orange-500 text-white shadow-sm shadow-orange-200">
+                      <Receipt className="h-4 w-4" />
+                    </div>
+                  </div>
+                  <div className="mt-3 text-2xl font-black tracking-tight text-orange-950">
+                    {money(expensesTotal, currency)}
+                  </div>
+                  <div className="mt-1 flex items-center gap-1 text-xs font-medium text-orange-700 group-hover:underline">
+                    <span>{data.expensesMonth?.count || 0} gastos (alquiler, luz...) →</span>
+                  </div>
+                </Link>
+
+                {/* 3. Ganancia Neta (Ventas - Egresos) */}
                 <div
-                  className={`grid h-8 w-8 place-items-center rounded-xl text-white shadow-sm ${
-                    lowStockCount > 0 ? 'bg-rose-500 shadow-rose-200 animate-pulse' : 'bg-emerald-500 shadow-emerald-200'
+                  className={`group relative overflow-hidden rounded-2xl border p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${
+                    isProfitPositive
+                      ? 'border-teal-300 bg-gradient-to-br from-teal-50 via-white to-emerald-50/50'
+                      : 'border-rose-300 bg-gradient-to-br from-rose-50 via-white to-red-50/50'
                   }`}
                 >
-                  <AlertTriangle className="h-4 w-4" />
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={`text-xs font-semibold uppercase tracking-wider ${
+                        isProfitPositive ? 'text-teal-800' : 'text-rose-800'
+                      }`}
+                    >
+                      Ganancia Neta
+                    </span>
+                    <div
+                      className={`grid h-8 w-8 place-items-center rounded-xl text-white shadow-sm ${
+                        isProfitPositive
+                          ? 'bg-teal-600 shadow-teal-200'
+                          : 'bg-rose-600 shadow-rose-200'
+                      }`}
+                    >
+                      {isProfitPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                    </div>
+                  </div>
+                  <div
+                    className={`mt-3 text-2xl font-black tracking-tight ${
+                      isProfitPositive ? 'text-teal-950' : 'text-rose-700'
+                    }`}
+                  >
+                    {isProfitPositive ? '+ ' : '− '}
+                    {money(Math.abs(netProfit), currency)}
+                  </div>
+                  <div
+                    className={`mt-1 flex items-center gap-1.5 text-xs font-semibold ${
+                      isProfitPositive ? 'text-teal-700' : 'text-rose-700'
+                    }`}
+                  >
+                    <span>Ventas − Egresos op.</span>
+                  </div>
                 </div>
+
+                {/* 4. Compras del mes */}
+                <div className="group relative overflow-hidden rounded-2xl border border-blue-200/80 bg-gradient-to-br from-blue-50/90 via-white to-blue-50/40 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-blue-800">
+                      Compras del mes
+                    </span>
+                    <div className="grid h-8 w-8 place-items-center rounded-xl bg-blue-500 text-white shadow-sm shadow-blue-200">
+                      <PackagePlus className="h-4 w-4" />
+                    </div>
+                  </div>
+                  <div className="mt-3 text-2xl font-black tracking-tight text-blue-950">
+                    {money(data.purchasesMonth?.total || 0, currency)}
+                  </div>
+                  <div className="mt-1 flex items-center gap-1.5 text-xs font-medium text-blue-700">
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+                    {data.purchasesMonth?.count || 0} compras a prov.
+                  </div>
+                </div>
+
+                {/* 5. Stock a costo */}
+                <div className="group relative overflow-hidden rounded-2xl border border-indigo-200/80 bg-gradient-to-br from-indigo-50/90 via-white to-indigo-50/40 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-indigo-800">
+                      Stock a costo
+                    </span>
+                    <div className="grid h-8 w-8 place-items-center rounded-xl bg-indigo-500 text-white shadow-sm shadow-indigo-200">
+                      <Boxes className="h-4 w-4" />
+                    </div>
+                  </div>
+                  <div className="mt-3 text-2xl font-black tracking-tight text-indigo-950">
+                    {money(data.stock.cost_value, currency)}
+                  </div>
+                  <div className="mt-1 text-xs font-medium text-indigo-700">
+                    Venta: {money(data.stock.sale_value, currency)}
+                  </div>
+                </div>
+
+                {/* 6. Por cobrar */}
+                <div className="group relative overflow-hidden rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50/90 via-white to-amber-50/40 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-amber-800">
+                      Por cobrar
+                    </span>
+                    <div className="grid h-8 w-8 place-items-center rounded-xl bg-amber-500 text-white shadow-sm shadow-amber-200">
+                      <Users className="h-4 w-4" />
+                    </div>
+                  </div>
+                  <div className="mt-3 text-2xl font-black tracking-tight text-amber-950">
+                    {money(data.receivable, currency)}
+                  </div>
+                  <div className="mt-1 text-xs font-medium text-amber-700">Saldo de clientes</div>
+                </div>
+
+                {/* 7. Por pagar */}
+                <div className="group relative overflow-hidden rounded-2xl border border-purple-200/80 bg-gradient-to-br from-purple-50/90 via-white to-purple-50/40 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-purple-800">
+                      Por pagar
+                    </span>
+                    <div className="grid h-8 w-8 place-items-center rounded-xl bg-purple-500 text-white shadow-sm shadow-purple-200">
+                      <Truck className="h-4 w-4" />
+                    </div>
+                  </div>
+                  <div className="mt-3 text-2xl font-black tracking-tight text-purple-950">
+                    {money(data.payable, currency)}
+                  </div>
+                  <div className="mt-1 text-xs font-medium text-purple-700">A pagar a proveedores</div>
+                </div>
+
+                {/* 8. Alerta de Stock Crítico */}
+                <Link
+                  to="/productos?lowStock=true"
+                  className={`group relative overflow-hidden rounded-2xl border p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${
+                    lowStockCount > 0
+                      ? 'border-rose-300 bg-gradient-to-br from-rose-50 via-white to-red-50 text-rose-950'
+                      : 'border-emerald-200 bg-gradient-to-br from-emerald-50/70 via-white to-teal-50/30 text-emerald-950'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={`text-xs font-semibold uppercase tracking-wider ${
+                        lowStockCount > 0 ? 'text-rose-800' : 'text-emerald-800'
+                      }`}
+                    >
+                      Alertas Stock
+                    </span>
+                    <div
+                      className={`grid h-8 w-8 place-items-center rounded-xl text-white shadow-sm ${
+                        lowStockCount > 0
+                          ? 'bg-rose-500 shadow-rose-200 animate-pulse'
+                          : 'bg-emerald-500 shadow-emerald-200'
+                      }`}
+                    >
+                      <AlertTriangle className="h-4 w-4" />
+                    </div>
+                  </div>
+                  <div
+                    className={`mt-3 text-2xl font-black tracking-tight ${
+                      lowStockCount > 0 ? 'text-rose-600' : 'text-emerald-700'
+                    }`}
+                  >
+                    {lowStockCount} {lowStockCount === 1 ? 'producto' : 'productos'}
+                  </div>
+                  <div
+                    className={`mt-1 flex items-center gap-1 text-xs font-semibold ${
+                      lowStockCount > 0 ? 'text-rose-600 group-hover:underline' : 'text-emerald-700'
+                    }`}
+                  >
+                    {lowStockCount > 0 ? 'Reponer urgente →' : 'Nivel de stock óptimo ✓'}
+                  </div>
+                </Link>
               </div>
-              <div
-                className={`mt-3 text-2xl font-black tracking-tight ${
-                  lowStockCount > 0 ? 'text-rose-600' : 'text-emerald-700'
-                }`}
-              >
-                {lowStockCount} {lowStockCount === 1 ? 'producto' : 'productos'}
-              </div>
-              <div
-                className={`mt-1 flex items-center gap-1 text-xs font-semibold ${
-                  lowStockCount > 0 ? 'text-rose-600 group-hover:underline' : 'text-emerald-700'
-                }`}
-              >
-                {lowStockCount > 0 ? 'Reponer urgente →' : 'Nivel de stock óptimo ✓'}
-              </div>
-            </Link>
-          </div>
+            );
+          })()}
 
           {/* Dos Columnas Principales: Lo más vendido vs Lo que se está agotando */}
           <div className="mb-8 grid gap-6 lg:grid-cols-2">

@@ -5,8 +5,18 @@ const router = Router();
 
 router.get('/', async (_req, res, next) => {
   try {
-    const [sales, purchases, stock, receivable, payable, recentSales, topProducts, lowStockProducts, lowStockCount] =
-      await Promise.all([
+    const [
+      sales,
+      purchases,
+      stock,
+      receivable,
+      payable,
+      recentSales,
+      topProducts,
+      lowStockProducts,
+      lowStockCount,
+      expenses,
+    ] = await Promise.all([
         query(
           `SELECT COALESCE(SUM(total), 0)::numeric AS total, COUNT(*)::int AS count
            FROM sales
@@ -69,12 +79,18 @@ router.get('/', async (_req, res, next) => {
            FROM products
            WHERE active = true AND (stock_qty <= min_stock OR stock_qty <= 0)`
         ),
+        query(
+          `SELECT COALESCE(SUM(amount), 0)::numeric AS total, COUNT(*)::int AS count
+           FROM expenses
+           WHERE paid_at >= date_trunc('month', CURRENT_DATE)`
+        ),
       ]);
 
     res.json({
       data: {
         salesMonth: sales.rows[0],
         purchasesMonth: purchases.rows[0],
+        expensesMonth: expenses.rows[0],
         stock: stock.rows[0],
         receivable: receivable.rows[0].total,
         payable: payable.rows[0].total,

@@ -10,12 +10,18 @@ function nextPrice(oldPrice, mode, value) {
   return money(Math.max(0, next));
 }
 
-async function matchingProducts(categoryId) {
+async function matchingProducts(categoryId, productIds) {
   const params = [];
   let sql = 'SELECT * FROM products WHERE active = true';
-  if (categoryId) {
+  if (Array.isArray(productIds) && productIds.length > 0) {
+    const ids = productIds.map(Number).filter(Boolean);
+    if (ids.length > 0) {
+      params.push(ids);
+      sql += ` AND id = ANY($${params.length}::int[])`;
+    }
+  } else if (categoryId) {
     params.push(Number(categoryId));
-    sql += ` AND category_id = $1`;
+    sql += ` AND category_id = $${params.length}`;
   }
   sql += ' ORDER BY name';
   return query(sql, params);
@@ -23,14 +29,14 @@ async function matchingProducts(categoryId) {
 
 router.post('/preview', async (req, res, next) => {
   try {
-    const { mode, value, categoryId } = req.body || {};
+    const { mode, value, categoryId, productIds } = req.body || {};
     if (!['percent', 'amount'].includes(mode)) {
       return res.status(400).json({ error: 'Modo inválido' });
     }
     if (!Number.isFinite(Number(value)) || Number(value) === 0) {
       return res.status(400).json({ error: 'Indicá un valor distinto de cero' });
     }
-    const products = await matchingProducts(categoryId);
+    const products = await matchingProducts(categoryId, productIds);
     const items = products.rows.map((product) => {
       const newPrice = nextPrice(product.sale_price, mode, value);
       return {
@@ -50,7 +56,7 @@ router.post('/preview', async (req, res, next) => {
 
 router.post('/apply', async (req, res, next) => {
   try {
-    const { mode, value, categoryId, notes } = req.body || {};
+    const { mode, value, categoryId, productIds, notes } = req.body || {};
     if (!['percent', 'amount'].includes(mode)) {
       return res.status(400).json({ error: 'Modo inválido' });
     }
@@ -58,7 +64,7 @@ router.post('/apply', async (req, res, next) => {
       return res.status(400).json({ error: 'Indicá un valor distinto de cero' });
     }
     const adjustment = await withTransaction(async (client) => {
-      const products = await matchingProducts(categoryId);
+      const products = await matchingProducts(categoryId, productIds);
       if (!products.rowCount) throw httpError(400, 'No hay productos para ajustar');
       const inserted = await client.query(
         `INSERT INTO price_adjustments (mode, value, category_id, notes, product_count, created_by)

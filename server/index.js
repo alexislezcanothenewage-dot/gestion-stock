@@ -17,6 +17,7 @@ import pricesRouter from './routes/prices.js';
 import ioRouter from './routes/io.js';
 import attachmentsRouter from './routes/attachments.js';
 import movementsRouter from './routes/movements.js';
+import expensesRouter from './routes/expenses.js';
 import { ensureUploadDir } from './lib/storage.js';
 
 assertRuntimeConfig();
@@ -56,6 +57,7 @@ app.use('/api/suppliers', requireAuth, partyRouter('suppliers'));
 app.use('/api/sales', requireAuth, salesRouter);
 app.use('/api/purchases', requireAuth, purchasesRouter);
 app.use('/api/payments', requireAuth, paymentsRouter);
+app.use('/api/expenses', requireAuth, expensesRouter);
 app.use('/api/prices', requireAuth, pricesRouter);
 app.use('/api/movements', requireAuth, movementsRouter);
 app.use('/api/io', requireAuth, ioRouter);

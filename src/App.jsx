@@ -14,6 +14,7 @@ import PaymentsPage from './pages/PaymentsPage';
 import PricesPage from './pages/PricesPage';
 import ImportExportPage from './pages/ImportExportPage';
 import MovementsPage from './pages/MovementsPage';
+import ExpensesPage from './pages/ExpensesPage';
 import SettingsPage from './pages/SettingsPage';
 
 export default function App() {
@@ -45,6 +46,7 @@ export default function App() {
         <Route path="compras/nueva" element={<DocumentEditorPage kind="purchases" />} />
         <Route path="compras/:id" element={<DocumentEditorPage kind="purchases" />} />
         <Route path="pagos" element={<PaymentsPage />} />
+        <Route path="egresos" element={<ExpensesPage />} />
         <Route path="precios" element={<PricesPage />} />
         <Route path="importar" element={<ImportExportPage />} />
         <Route path="configuracion" element={<SettingsPage />} />

@@ -213,3 +213,20 @@ CREATE INDEX IF NOT EXISTS attachments_entity_idx ON attachments (entity_type, e
 ALTER TABLE stock_movements DROP CONSTRAINT IF EXISTS stock_movements_kind;
 ALTER TABLE stock_movements ADD CONSTRAINT stock_movements_kind
   CHECK (kind IN ('sale', 'purchase', 'adjustment', 'import', 'manual'));
+
+CREATE TABLE IF NOT EXISTS expenses (
+  id SERIAL PRIMARY KEY,
+  category TEXT NOT NULL,
+  amount NUMERIC(14,2) NOT NULL,
+  paid_at DATE NOT NULL DEFAULT CURRENT_DATE,
+  method TEXT NOT NULL DEFAULT 'cash',
+  notes TEXT,
+  created_by INT REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT expenses_amount CHECK (amount > 0),
+  CONSTRAINT expenses_method CHECK (method IN ('cash', 'transfer', 'card', 'check', 'other'))
+);
+
+CREATE INDEX IF NOT EXISTS expenses_paid_idx ON expenses (paid_at);
+CREATE INDEX IF NOT EXISTS expenses_category_idx ON expenses (category);
+
